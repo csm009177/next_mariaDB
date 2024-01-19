@@ -30,6 +30,24 @@ app.prepare().then(() => {
   // URL-encoded 형식의 요청을 파싱하기 위해 Express 미들웨어를 사용합니다.
   server.use(express.urlencoded({ extended : true }));
 
+  // 회원가입 API 엔드포인트를 설정합니다.
+  server.post("/signup", (req, res) => {
+    const { name, username, password } = req.body;
+    // 회원가입 정보를 데이터베이스에 삽입하는 쿼리를 정의합니다.
+    const query = "INSERT INTO users (name, username, password) VALUES (?, ?, ?)";
+    // MySQL 데이터베이스에 쿼리를 실행하고 결과를 처리합니다.
+    connection.query(query, [name, username, password], (err, results, fields) => {
+      // 오류가 발생한 경우 오류 메시지를 출력하고 클라이언트에게 500 상태 코드와 함께 오류 메시지를 반환합니다.
+      if (err) {
+        console.error("Error signing up:", err);
+        res.status(500).json({ message: "회원가입에 실패했습니다." });
+        return;
+      }
+      // 회원가입이 성공적으로 처리된 경우, 200 상태 코드와 함께 성공 메시지를 클라이언트에게 반환합니다.
+      res.status(200).json({ message: "회원가입이 완료되었습니다." });
+    });
+  });
+
 
   // Next.js 서버에 모든 요청을 위임하기 위한 핸들러를 설정합니다.
   server.all('*', (req, res) => {
